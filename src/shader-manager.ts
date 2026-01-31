@@ -54,7 +54,11 @@ export async function getShader(id: string): Promise<ShaderProject | undefined> 
 
 export async function updateShader(id: string, updates: Partial<Pick<ShaderProject, 'name' | 'code'>>): Promise<void> {
     const database = await getDB();
-    const shader = await database.get('shaders', id);
+    const tx = database.transaction('shaders', 'readwrite');
+    const store = tx.objectStore('shaders');
+
+    // Use the transaction to get then put
+    const shader = await store.get(id);
 
     if (!shader) {
         throw new Error(`Shader with id ${id} not found`);
@@ -66,7 +70,8 @@ export async function updateShader(id: string, updates: Partial<Pick<ShaderProje
         updatedAt: Date.now()
     };
 
-    await database.put('shaders', updated);
+    await store.put(updated);
+    await tx.done;
 }
 
 export async function deleteShader(id: string): Promise<void> {

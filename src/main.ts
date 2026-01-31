@@ -2,6 +2,7 @@ import './style.css';
 import { createEditor, highlightError, clearErrors, goToLine, getEditorCode, editorInstance } from './editor/editor';
 import { WebGLRenderer, DEFAULT_SHADER } from './renderers/webgl-renderer';
 import { Controls, ErrorPanel } from './ui/controls';
+import { ProjectManager } from './ui/project-manager';
 import { getOrCreateDefaultShader, updateShader } from './shader-manager';
 import type { ShaderProject, CompilationError } from './types';
 
@@ -11,13 +12,12 @@ if ('serviceWorker' in navigator) {
     registerSW({ immediate: true });
   }).catch(console.error);
 }
-
-// Application state
-let currentShader: ShaderProject | null = null;
-let renderer: WebGLRenderer | null = null;
 let compileTimeout: number | null = null;
 let controls: Controls | null = null;
+let projectManager: ProjectManager | null = null;
 let errorPanel: ErrorPanel | null = null;
+let currentShader: ShaderProject | null = null;
+let renderer: WebGLRenderer | null = null;
 
 // Debounced compile
 function scheduleCompile(): void {
@@ -61,7 +61,10 @@ async function init(): Promise<void> {
   // Create layout
   app.innerHTML = `
     <header class="header">
-      <h1>🎨 Shader Studio</h1>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <h1>🎨 Shader Studio</h1>
+        <button id="projects-btn" class="secondary-btn">Projects</button>
+      </div>
       <span id="shader-name">Loading...</span>
     </header>
     <div class="editor-container">
@@ -81,6 +84,7 @@ async function init(): Promise<void> {
   const controlsContainer = document.getElementById('controls')!;
   const errorContainer = document.getElementById('error-panel')!;
   const shaderNameEl = document.getElementById('shader-name')!;
+  const projectsBtn = document.getElementById('projects-btn')!;
 
   // Load or create shader
   currentShader = await getOrCreateDefaultShader();
@@ -176,6 +180,51 @@ async function init(): Promise<void> {
         break;
     }
   });
+
+  // Create Project Manager
+  projectManager = new ProjectManager({
+    container: document.body,
+    onSelect: (shader) => {
+      // Save current shader before switching
+      if (currentShader && editorInstance) {
+        const code = getEditorCode();
+        // Only save if we have changes or just to be safe. 
+        // Since we don't track dirty state, we save.
+        // We must NOT use compile() here because it updates the renderer.
+        // We just want to persist the text to the DB.
+        updateShader(currentShader.id, { code }).catch(console.error);
+
+        // Also clear any pending compile to avoid race conditions
+        if (compileTimeout) {
+          clearTimeout(compileTimeout);
+          compileTimeout = null;
+        }
+      }
+
+      currentShader = shader;
+      shaderNameEl.textContent = shader.name;
+
+      if (editorInstance) {
+        editorInstance.setValue(shader.code);
+      }
+
+      compile();
+      renderer?.restart();
+    }
+  });
+
+  projectsBtn.onclick = () => projectManager?.show();
+
+  // Register header double-click to rename current project
+  shaderNameEl.ondblclick = async () => {
+    if (!currentShader) return;
+    const newName = prompt('Rename project:', currentShader.name);
+    if (newName && newName !== currentShader.name) {
+      await updateShader(currentShader.id, { name: newName });
+      currentShader.name = newName;
+      shaderNameEl.textContent = newName;
+    }
+  };
 
   // Create editor
   createEditor({
