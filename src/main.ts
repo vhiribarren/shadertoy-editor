@@ -1,5 +1,5 @@
 import './style.css';
-import { createEditor, highlightError, clearErrors, goToLine, getEditorCode } from './editor/editor';
+import { createEditor, highlightError, clearErrors, goToLine, getEditorCode, editorInstance } from './editor/editor';
 import { WebGLRenderer, DEFAULT_SHADER } from './renderers/webgl-renderer';
 import { Controls, ErrorPanel } from './ui/controls';
 import { getOrCreateDefaultShader, updateShader } from './shader-manager';
@@ -67,6 +67,7 @@ async function init(): Promise<void> {
     <div class="editor-container">
       <div id="editor"></div>
     </div>
+    <div class="resizer" id="resizer"></div>
     <div class="canvas-container">
       <canvas id="canvas"></canvas>
     </div>
@@ -109,6 +110,37 @@ async function init(): Promise<void> {
   renderer = new WebGLRenderer(canvas);
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
+
+  // Resizer logic
+  const resizer = document.getElementById('resizer')!;
+  let isResizing = false;
+
+  resizer.addEventListener('mousedown', () => {
+    isResizing = true;
+    resizer.classList.add('active');
+    document.body.style.cursor = 'col-resize';
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!isResizing) return;
+    e.preventDefault();
+    const percentage = (e.clientX / window.innerWidth) * 100;
+    if (percentage > 10 && percentage < 90) {
+      app.style.gridTemplateColumns = `${percentage}% 4px 1fr`;
+      editorInstance?.layout(); // Resize editor
+      resizeCanvas(); // Resize canvas
+    }
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (isResizing) {
+      isResizing = false;
+      resizer.classList.remove('active');
+      document.body.style.cursor = '';
+      editorInstance?.layout(); // Ensure final layout update
+      resizeCanvas();
+    }
+  });
 
   // Create error panel
   errorPanel = new ErrorPanel({

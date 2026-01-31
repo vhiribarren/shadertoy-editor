@@ -17,7 +17,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
   background: var(--bg-primary);
@@ -27,11 +28,23 @@ html, body {
 
 #app {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 4px 1fr;
   grid-template-rows: auto 1fr auto;
   height: 100vh;
-  gap: 1px;
+  gap: 0;
   background: var(--border);
+}
+
+.resizer {
+  background: var(--border);
+  cursor: col-resize;
+  transition: background 0.2s;
+  z-index: 10;
+}
+
+.resizer:hover,
+.resizer.active {
+  background: var(--accent);
 }
 
 .header {

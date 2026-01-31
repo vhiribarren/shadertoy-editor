@@ -12,7 +12,7 @@ self.MonacoEnvironment = {
     }
 };
 
-let editorInstance: monaco.editor.IStandaloneCodeEditor | null = null;
+export let editorInstance: monaco.editor.IStandaloneCodeEditor | null = null;
 
 export interface EditorOptions {
     container: HTMLElement;
