@@ -1,3 +1,20 @@
+// MIT No Attribution
+//
+// Copyright 2026 Vincent Hiribarren
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this
+// software and associated documentation files (the "Software"), to deal in the Software
+// without restriction, including without limitation the rights to use, copy, modify,
+// merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+// PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
 import * as monaco from 'monaco-editor';
 
 interface CompletionItem {
@@ -241,6 +258,63 @@ const allCompletions = [
 ];
 
 // Register completion provider
+// Parse the code to find variable and function declarations
+function getDynamicCompletions(model: monaco.editor.ITextModel, range: monaco.IRange): monaco.languages.CompletionItem[] {
+    const code = model.getValue();
+    const completions: monaco.languages.CompletionItem[] = [];
+    const definedNames = new Set<string>();
+
+    // Regex for variable declarations
+    // Matches: type variableName
+    const typeRegex = /\b(float|int|uint|bool|vec[234]|ivec[234]|bvec[234]|mat[234]|sampler2D)\s+([a-zA-Z_]\w*)/g;
+
+    // Regex for function declarations
+    // Matches: type functionName (
+    const funcRegex = /\b(void|float|int|uint|bool|vec[234]|ivec[234]|bvec[234]|mat[234])\s+([a-zA-Z_]\w*)\s*\(/g;
+
+    let match;
+
+    // Find variables
+    while ((match = typeRegex.exec(code)) !== null) {
+        const type = match[1];
+        const name = match[2];
+
+        // Avoid duplicates and keywords
+        if (!definedNames.has(name) && !glslBuiltinFunctions.some(f => f.label === name)) {
+            definedNames.add(name);
+            completions.push({
+                label: name,
+                kind: monaco.languages.CompletionItemKind.Variable,
+                detail: type,
+                documentation: `User defined variable of type ${type}`,
+                insertText: name,
+                range: range
+            });
+        }
+    }
+
+    // Find functions
+    while ((match = funcRegex.exec(code)) !== null) {
+        const returnType = match[1];
+        const name = match[2];
+
+        // Avoid duplicates (if mainImage is defined, we might pick it up, but that's fine)
+        if (!definedNames.has(name)) {
+            definedNames.add(name);
+            completions.push({
+                label: name,
+                kind: monaco.languages.CompletionItemKind.Function,
+                detail: `${returnType} ${name}(...)`,
+                documentation: `User defined function returning ${returnType}`,
+                insertText: name,
+                range: range
+            });
+        }
+    }
+
+    return completions;
+}
+
 export function registerGLSLCompletionProvider(): monaco.IDisposable {
     return monaco.languages.registerCompletionItemProvider('glsl', {
         provideCompletionItems: (model, position) => {
@@ -252,17 +326,21 @@ export function registerGLSLCompletionProvider(): monaco.IDisposable {
                 endColumn: word.endColumn
             };
 
-            const suggestions: monaco.languages.CompletionItem[] = allCompletions.map(item => ({
+            // Get standard completions
+            const staticCompletions: monaco.languages.CompletionItem[] = allCompletions.map(item => ({
                 label: item.label,
                 kind: item.kind,
                 detail: item.detail,
                 documentation: item.documentation,
                 insertText: item.insertText || item.label,
                 insertTextRules: item.insertTextRules,
-                range
+                range: range
             }));
 
-            return { suggestions };
+            // Get dynamic completions from user code
+            const dynamicCompletions = getDynamicCompletions(model, range);
+
+            return { suggestions: [...staticCompletions, ...dynamicCompletions] };
         }
     });
 }
