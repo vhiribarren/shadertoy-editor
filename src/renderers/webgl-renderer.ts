@@ -18,7 +18,7 @@
 import type { CompilationError, RendererState, RendererEvent } from '../types';
 
 // Default Shadertoy-compatible fragment shader
-export const DEFAULT_SHADER = `// Shader Studio - Shadertoy Compatible
+export const DEFAULT_SHADER = `// Shader Studio Lite - Shadertoy Compatible
 // Use iResolution, iTime, iMouse, etc.
 
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
