@@ -16,7 +16,6 @@
 // SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import { describe, it, expect } from 'vitest';
-import type { ShaderProject } from './types';
 import {
     generateId,
     createShader,
