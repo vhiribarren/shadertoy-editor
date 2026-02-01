@@ -20,6 +20,7 @@ import { createEditor, highlightError, clearErrors, goToLine, getEditorCode, edi
 import { WebGLRenderer, DEFAULT_SHADER } from './renderers/webgl-renderer';
 import { Controls, ErrorPanel } from './ui/controls';
 import { ProjectManager } from './ui/project-manager';
+import { createGitHubBanner } from './ui/github-banner';
 import { getOrCreateDefaultShader, updateShader, getShaderMainCode } from './shader-manager';
 import type { ShaderProject, CompilationError } from './types';
 
@@ -94,6 +95,9 @@ async function init(): Promise<void> {
     <div class="controls" id="controls"></div>
     <div class="error-panel" id="error-panel"></div>
   `;
+
+  // Add GitHub banner
+  app.appendChild(createGitHubBanner());
 
   // Get elements
   const editorContainer = document.getElementById('editor')!;
