@@ -27,7 +27,7 @@ interface ShaderDB extends DBSchema {
     };
 }
 
-const DB_NAME = 'shader-studio';
+const DB_NAME = 'shadertoy-editor';
 const DB_VERSION = 1;
 
 let db: IDBPDatabase<ShaderDB> | null = null;

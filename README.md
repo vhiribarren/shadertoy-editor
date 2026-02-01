@@ -24,8 +24,8 @@ environment with persistent local storage.
 ### Installation
 
 ```bash
-git clone https://github.com/vhiribarren/shader-studio-lite.git
-cd shader-studio-lite
+git clone https://github.com/vhiribarren/shadertoy-editor.git
+cd shadertoy-editor
 npm install
 ```
 

@@ -79,7 +79,7 @@ async function init(): Promise<void> {
   app.innerHTML = `
     <header class="header">
       <div style="display: flex; align-items: center; gap: 16px;">
-        <h1>🎨 Shader Studio Lite</h1>
+        <h1>🎨 Shadertoy Editor</h1>
         <button id="projects-btn" class="secondary-btn">Projects</button>
       </div>
       <span id="shader-name">Loading...</span>
