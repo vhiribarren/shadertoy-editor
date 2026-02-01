@@ -24,8 +24,8 @@ export default defineConfig({
             registerType: 'autoUpdate',
             includeAssets: ['favicon.ico', 'robots.txt'],
             manifest: {
-                name: 'Shader Studio Lite',
-                short_name: 'ShaderStudioLite',
+                name: 'Shadertoy Editor',
+                short_name: 'Shadertoy Editor',
                 description: 'WebGL shader development environment with Shadertoy compatibility',
                 theme_color: '#1e1e1e',
                 background_color: '#1e1e1e',
