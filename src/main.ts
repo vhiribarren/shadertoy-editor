@@ -20,7 +20,7 @@ import { createEditor, highlightError, clearErrors, goToLine, getEditorCode, edi
 import { WebGLRenderer, DEFAULT_SHADER } from './renderers/webgl-renderer';
 import { Controls, ErrorPanel } from './ui/controls';
 import { ProjectManager } from './ui/project-manager';
-import { getOrCreateDefaultShader, updateShader } from './shader-manager';
+import { getOrCreateDefaultShader, updateShader, getShaderMainCode } from './shader-manager';
 import type { ShaderProject, CompilationError } from './types';
 
 // Register service worker for PWA
@@ -222,7 +222,7 @@ async function init(): Promise<void> {
       shaderNameEl.textContent = shader.name;
 
       if (editorInstance) {
-        editorInstance.setValue(shader.code);
+        editorInstance.setValue(getShaderMainCode(shader));
       }
 
       compile();
@@ -246,7 +246,7 @@ async function init(): Promise<void> {
   // Create editor
   createEditor({
     container: editorContainer,
-    initialCode: currentShader.code || DEFAULT_SHADER,
+    initialCode: getShaderMainCode(currentShader) || DEFAULT_SHADER,
     onChange: () => scheduleCompile()
   });
 

@@ -55,7 +55,12 @@ export async function createShader(name: string, code?: string): Promise<ShaderP
     const shader: ShaderProject = {
         id: generateId(),
         name,
-        code: code || DEFAULT_SHADER,
+        files: [
+            {
+                name: 'main.glsl',
+                code: code || DEFAULT_SHADER
+            }
+        ],
         createdAt: now,
         updatedAt: now
     };
@@ -69,7 +74,7 @@ export async function getShader(id: string): Promise<ShaderProject | undefined> 
     return database.get('shaders', id);
 }
 
-export async function updateShader(id: string, updates: Partial<Pick<ShaderProject, 'name' | 'code'>>): Promise<void> {
+export async function updateShader(id: string, updates: Partial<Pick<ShaderProject, 'name'>> & { code?: string }): Promise<void> {
     const database = await getDB();
     const tx = database.transaction('shaders', 'readwrite');
     const store = tx.objectStore('shaders');
@@ -87,6 +92,14 @@ export async function updateShader(id: string, updates: Partial<Pick<ShaderProje
         updatedAt: Date.now()
     };
 
+    // If code is provided, update the main file
+    if (updates.code !== undefined) {
+        const mainFile = updated.files.find(f => f.name === 'main.glsl');
+        if (mainFile) {
+            mainFile.code = updates.code;
+        }
+    }
+
     await store.put(updated);
     await tx.done;
 }
@@ -102,6 +115,11 @@ export async function getAllShaders(): Promise<ShaderProject[]> {
     return shaders.reverse(); // Most recent first
 }
 
+export function getShaderMainCode(shader: ShaderProject): string {
+    const mainFile = shader.files.find(f => f.name === 'main.glsl');
+    return mainFile?.code || '';
+}
+
 export async function getOrCreateDefaultShader(): Promise<ShaderProject> {
     const shaders = await getAllShaders();
 
@@ -115,7 +133,7 @@ export async function getOrCreateDefaultShader(): Promise<ShaderProject> {
 export function exportShader(shader: ShaderProject): string {
     return JSON.stringify({
         name: shader.name,
-        code: shader.code,
+        files: shader.files.map(f => ({ name: f.name, code: f.code })),
         exportedAt: new Date().toISOString()
     }, null, 2);
 }
@@ -123,7 +141,16 @@ export function exportShader(shader: ShaderProject): string {
 export function importShader(json: string): { name: string; code: string } | null {
     try {
         const data = JSON.parse(json);
+        if (data.files && Array.isArray(data.files)) {
+            // New format with multiple files - find main.glsl or use the first one
+            const mainFile = data.files.find((f: any) => f.name === 'main.glsl') || data.files[0];
+            return {
+                name: data.name || 'Imported Shader',
+                code: mainFile.code || ''
+            };
+        }
         if (typeof data.code === 'string') {
+            // Old format with single code field
             return {
                 name: data.name || 'Imported Shader',
                 code: data.code
