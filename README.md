@@ -1,6 +1,7 @@
 # Shadertoy Editor
 
-> **Note**: This is mainly an AI-generated project.
+> [!NOTE]
+> This is mainly an AI-generated project.
 
 A lightweight, web-based WebGL shader editor with Shadertoy compatibility.
 Write, compile, and visualize GLSL fragment shaders in a progressive web app
