@@ -385,3 +385,64 @@ body {
   width: 24px;
   height: 24px;
 }
+
+/* Responsive: stack canvas above editor on narrow screens */
+@media (max-width: 800px) {
+  #app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* Hide the vertical resizer used on wide screens */
+  .resizer {
+    display: none;
+  }
+
+  .header {
+    order: 0;
+    flex: 0 0 auto;
+  }
+
+  .canvas-container {
+    order: 1;
+    flex: 0 0 45vh; /* give the canvas a visible area above the editor */
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+  }
+
+  .canvas-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+    max-height: 100%;
+  }
+
+  .editor-container {
+    order: 2;
+    flex: 1 1 auto;
+    min-height: 0; /* allow editor to shrink properly inside flex */
+    display: flex;
+    flex-direction: column;
+  }
+
+  #editor {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .controls {
+    order: 3;
+    flex: 0 0 auto;
+  }
+
+  .error-panel {
+    order: 4;
+    max-height: 140px;
+    overflow-y: auto;
+  }
+}
