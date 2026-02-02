@@ -3,16 +3,23 @@
 > [!NOTE]
 > This is mainly an AI-generated project.
 
-A lightweight, web-based WebGL shader editor with Shadertoy compatibility.
+A lightweight, web-based WebGL shader editor with [Shadertoy][shadertoy] compatibility.
 Write, compile, and visualize GLSL fragment shaders in a progressive web app
 environment with persistent local storage.
+
+Visit
+**[https://www.alea.net/shadertoy-editor/](https://www.alea.net/shadertoy-editor/)**
+to use the editor directly in your browser.
+
+You can also install it as a progressive web app (PWA) on your device, by
+clicking on the install button in your browser's address bar.
 
 ## Features
 
 - **Shader Editing** - GLSL syntax highlighting, code completions, and error
   markers
 - **WebGL 2.0 Real-time Rendering** - Compile and render shaders instantly
-- **[Shadertoy](https://www.shadertoy.com/) Compatible** - Support for standard Shadertoy uniforms
+- **Shadertoy Compatible** - Support for standard [Shadertoy][shadertoy] uniforms
   (`iResolution`, `iTime`, `iMouse`, etc.)
 - **Project Persistence** - Locally save and manage shader projects
 - **PWA Support** - Offline-capable progressive web app
@@ -54,13 +61,6 @@ npm run test           # Run tests once
 npm run test:watch     # Run tests in watch mode
 ```
 
-Tests cover:
-- **CRUD Operations** - Create, read, update, delete shader projects with data format validation
-- **Data Type Validation** - Ensure IDs, names, timestamps, and file structures match expected types
-- **Import/Export Roundtrips** - Verify exported projects can be re-imported without data loss
-- **Format Compatibility** - Support for multiple import formats (new files array, old single code field, raw GLSL)
-- **Edge Cases** - Unicode, special characters, empty strings, very long code, etc.
-
 ### Shader Structure
 
 All shaders implement the standard Shadertoy function:
@@ -74,11 +74,28 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 ```
 
 Available Shadertoy uniforms:
-- `iResolution` (vec3) - Viewport resolution
-- `iTime` (float) - Elapsed time in seconds
+- `iResolution` (vec3) - Viewport resolution in pixels
+- `iTime` (float) - Elapsed time in seconds since the shader started
+- `iTimeDelta` (float) - Time elapsed since the last frame
 - `iFrame` (int) - Frame count
-- `iMouse` (vec4) - Mouse position and click state
+- `iFrameRate` (float) - Frame rate in frames per second
+- `iMouse` (vec4) - Mouse position and click state (x, y, click_x, click_y)
+- `iDate` (vec4) - Year, month, day, seconds since midnight
+
+## Limitations
+
+Compared to [Shadertoy][shadertoy], the following features are not currently supported:
+
+- **Input Channels** - `iChannel0`, `iChannel1`, `iChannel2`, `iChannel3` uniforms are declared but not functional. Texture inputs, webcam sources, and other channel types are not available.
+- **Audio Input** - No support for audio visualization or sound-reactive features
+- **Screen Capture** - Cannot capture or manipulate screen output across frames
+- **Keyboard Input** - No `iKey` uniform or keyboard state tracking
+- **Multiple Passes** - Only single-pass fragment shaders are supported; multi-pass rendering and buffer channels (A, B, C, D) are not available
+
+These limitations may be addressed in future versions. For now, shaders relying only on time, mouse, and the Shadertoy mathematical uniforms will work seamlessly.
 
 ## License
 
 MIT-0 License - See [LICENSE.md](LICENSE.md) for details
+
+[shadertoy]: https://www.shadertoy.com/
